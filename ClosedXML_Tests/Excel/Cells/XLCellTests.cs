@@ -1,4 +1,5 @@
 using ClosedXML.Excel;
+using ClosedXML_Tests.Utils;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -207,6 +208,26 @@ namespace ClosedXML_Tests
             Assert.AreEqual((int)XLDataType.TimeSpan, range.Cell(1, 1).Value);
             Assert.AreEqual(XLTableCellType.Header.ToString(), range.Cell(1, 2).Value);
             Assert.AreEqual("1", range.Cell(1, 3).Value);
+        }
+
+        [Test]
+        public void InsertData_with_UnknownType_IEnumerable()
+        {
+            var ws = new XLWorkbook().Worksheets.Add("Sheet1");
+            ws.Workbook.KnownTypeMapping.Add(typeof(Date), typeof(DateTime));
+
+            var dayList = new List<dynamic>()
+            {
+                new {Id = 1, Day = new Date(2000, 1, 1) },
+                new {Id = 2, Day = new Date(2000, 1, 2) },
+                new {Id = 3, Day = new Date(2000, 1, 3) },
+                new {Id = 4, Day = new Date(2000, 1, 4) },
+            };
+
+            ws.FirstCell().InsertData(dayList);
+
+            Assert.AreEqual(new DateTime(2000, 1, 1), ws.Cell("B1").GetDateTime());
+            Assert.AreEqual(String.Empty, ws.Cell("A5").Value);
         }
 
         [Test]
